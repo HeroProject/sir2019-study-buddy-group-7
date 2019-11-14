@@ -6,6 +6,8 @@ class SampleApplication(Base.AbstractApplication):
         self.setLanguage('en-US')
         self.sayAnimated('Hello Group 7.')
         sleep(2)
+        # test comment
+
 
     def onRobotEvent(self, event):
         print(event)
