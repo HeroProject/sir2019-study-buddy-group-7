@@ -2,11 +2,11 @@
 
 ## The Team
 - [gianlucatruda](http://github.com/gianlucatruda)
-- [Britt0508](http://github.com/Britt0508)
-- [Sa-and](http://github.com/Sa-and)
+- [britt0508](http://github.com/britt0508)
+- [sa-and](http://github.com/sa-and)
 - [GiuBarrios](http://github.com/GiuBarrios)
-- (Nelly)
-- (Serafim)
+- [nellylojewsky](http://github.com/nellylojewsky)
+- [Serafim129](http://github.com/Serafim179)
 
 ## Development Tasks
 
@@ -14,5 +14,5 @@
 - [ ] Configure everyon's development environments
 - [ ] Divide up the workload and define tasks
 - [x] Connect to Nao
-- [ ] Give everyone access to the repo
+- [x] Give everyone access to the repo
 
