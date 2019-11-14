@@ -8,7 +8,6 @@ class SampleApplication(Base.AbstractApplication):
         sleep(2)
         # test comment
 
-
     def onRobotEvent(self, event):
         print(event)
 
