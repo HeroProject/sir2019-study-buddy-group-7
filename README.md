@@ -15,4 +15,5 @@
 - [ ] Divide up the workload and define tasks
 - [x] Connect to Nao
 - [x] Give everyone access to the repo
+- [x] Protect `master` branch and make `dev` the base branch
 
