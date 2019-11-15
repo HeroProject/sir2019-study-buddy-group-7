@@ -15,6 +15,8 @@ class SampleApplication(Base.AbstractApplication):
         self.name_lock = Semaphore(0)
 
         # Attributes of our application
+        # Beware that if naming is changed here, the corresponding parameter in DialogeFlow has to be
+        # changed as well if it exists
         self.user_name = None
 
     def main(self):
@@ -40,10 +42,9 @@ class SampleApplication(Base.AbstractApplication):
         self.doGesture('untitled-2ae403/behavior_1')
         self.gesture_lock.acquire()
 
-        # TODO: How to set this up properly
         # Pass the required Dialogflow parameters (add your Dialogflow parameters)
-        # self.setDialogflowKey('<keyfile>.json')
-        # self.setDialogflowAgent('<agentname>')
+        self.setDialogflowKey('sample_diagFl_key.json')
+        self.setDialogflowAgent('sir2019_g7_sample') # Maybe this must be changed to 'sir2019-g7-sample-wfkciw' which is the project ID
 
         # Listen for an answer for at most 5 seconds
         # This snipped assumes a DialogueFlow application listening for a name
