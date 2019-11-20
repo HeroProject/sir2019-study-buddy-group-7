@@ -38,7 +38,7 @@ class SpeechRecogApp(Base.AbstractApplication):
         except InteractionException:
             self.sayAnimated('Sorry, it was not possible to understand your name. I will go to standby mode now.')
             self.textLock.acquire()
-            self.main()
+            # self.main()
 
 
     def onAudioIntent(self, *args, intentName):
@@ -68,15 +68,14 @@ class SpeechRecogApp(Base.AbstractApplication):
         self.intendUnderstood = False
         while attempts > 0 and not self.intendUnderstood:
             logger.debug(f'Attempts: {attempts}')
+            attempts -= 1
             self.setAudioContext(audioContext)
             self.startListening()
             self.intentLock.acquire(timeout=timeout)
             self.stopListening()
-
-            if not self.intendUnderstood:
+            if not self.intendUnderstood and attempts > 0:
                 self.sayAnimated('Sorry, I didn\'t catch that. Could you please repeat that?')
                 self.textLock.acquire()
-            attempts -= 1
         if attempts == 0:
             raise InteractionException
 
