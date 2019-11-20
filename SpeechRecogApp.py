@@ -22,10 +22,14 @@ class SpeechRecogApp(Base.AbstractApplication):
         self.setDialogflowAgent('sir2019_g7_sample-wfkciw')  # Maybe this must be changed to 'sir2019-g7-sample-wfkciw' which is the project ID
 
     def main(self):
+        print('Main called...')
         # Setting language
         self.setLanguage('en-US')
+        print('set language ran.')
         self.languageLock.acquire()
-
+        self.say('Lock acquired. Running...')
+        self.textLock.acquire()
+        print('Lock acquired. Running...')
         try:
             self.ask('What\'s your name?', 'answer_name')
         except InteractionException:
@@ -82,8 +86,17 @@ class InteractionException(Exception):
     def __init__(self):
         super().__init__()
 
+if __name__ == '__main__':
+    print('Initialising the speech recognition app.')
+    sample = SpeechRecogApp()
+    try:
+        # Run the application
+        sample.main()
+        sample.stop()
+    except KeyboardInterrupt:
+        print('Early stopping of thread.')
+        try:
+            sample.stop()
+        except Exception as e:
+            raise e
 
-# Run the application
-sample = SpeechRecogApp()
-sample.main()
-sample.stop()
