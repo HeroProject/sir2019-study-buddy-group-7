@@ -42,13 +42,12 @@ class SpeechRecogApp(Base.AbstractApplication):
 
 
     def onAudioIntent(self, *args, intentName):
-        # Something was understood
-        self.intendUnderstood = True
-
         # Assuming we have a DialogueFlow app for the intent "name"
-        if intentName == 'answer_name' and len(args) > 0:
-            print(args)
-            self.userName = args[0]
+        if intentName == 'answer_name':
+            logger.info(f'Arguments: {args}')
+            if len(args) > 0:
+                self.intendUnderstood = True
+                self.userName = args[0]
 
     def onRobotEvent(self, event):
         # make sure all our started actions are completed:
