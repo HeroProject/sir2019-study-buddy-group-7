@@ -1,5 +1,6 @@
 import AbstractApplication as Base
 from threading import Semaphore
+from loguru import logger
 
 class SpeechRecogApp(Base.AbstractApplication):
     # setup our Application
@@ -19,26 +20,26 @@ class SpeechRecogApp(Base.AbstractApplication):
 
         # Pass the required Dialogflow parameters (add your Dialogflow parameters)
         self.setDialogflowKey('sample_diagFl_key.json')
-        self.setDialogflowAgent('sir2019_g7_sample-wfkciw')  # Maybe this must be changed to 'sir2019-g7-sample-wfkciw' which is the project ID
+        self.setDialogflowAgent('sir2019-g7-sample-wfkciw')  # Maybe this must be changed to 'sir2019-g7-sample-wfkciw' which is the project ID
 
     def main(self):
-        print('Main called...')
+        logger.debug('Main called...')
         # Setting language
         self.setLanguage('en-US')
-        print('set language ran.')
+        logger.debug('set language ran.')
         self.languageLock.acquire()
         self.say('Lock acquired. Running...')
         self.textLock.acquire()
-        print('Lock acquired. Running...')
+        logger.debug('Lock acquired. Running...')
         try:
             self.ask('What\'s your name?', 'answer_name')
+            self.sayAnimated('Oh hi ' + self.userName)
+            self.textLock.acquire()
         except InteractionException:
             self.sayAnimated('Sorry, it was not possible to understand your name. I will go to standby mode now.')
             self.textLock.acquire()
             self.main()
 
-        self.sayAnimated('Oh hi ' + self.userName)
-        self.textLock.acquire()
 
     def onAudioIntent(self, *args, intentName):
         # Something was understood
@@ -46,9 +47,8 @@ class SpeechRecogApp(Base.AbstractApplication):
 
         # Assuming we have a DialogueFlow app for the intent "name"
         if intentName == 'answer_name' and len(args) > 0:
+            print(args)
             self.userName = args[0]
-
-        self.intentLock.release()
 
     def onRobotEvent(self, event):
         # make sure all our started actions are completed:
@@ -58,7 +58,7 @@ class SpeechRecogApp(Base.AbstractApplication):
             self.languageLock.release()
 
         # print what is going on
-        print(event)
+        logger.debug(event)
 
     def ask(self, question, audioContext, attempts=3, timeout=5):
         # We only want the question to be asked once, right?
@@ -67,7 +67,8 @@ class SpeechRecogApp(Base.AbstractApplication):
 
         # new question, new stuff to understand
         self.intendUnderstood = False
-        while attempts > 0 or not self.intendUnderstood:
+        while attempts > 0 and not self.intendUnderstood:
+            logger.debug(f'Attempts: {attempts}')
             self.setAudioContext(audioContext)
             self.startListening()
             self.intentLock.acquire(timeout=timeout)
@@ -75,9 +76,8 @@ class SpeechRecogApp(Base.AbstractApplication):
 
             if not self.intendUnderstood:
                 self.sayAnimated('Sorry, I didn\'t catch that. Could you please repeat that?')
-            self.textLock.acquire()
+                self.textLock.acquire()
             attempts -= 1
-
         if attempts == 0:
             raise InteractionException
 
@@ -87,14 +87,14 @@ class InteractionException(Exception):
         super().__init__()
 
 if __name__ == '__main__':
-    print('Initialising the speech recognition app.')
+    logger.debug('Initialising the speech recognition app.')
     sample = SpeechRecogApp()
     try:
         # Run the application
         sample.main()
         sample.stop()
     except KeyboardInterrupt:
-        print('Early stopping of thread.')
+        logger.debug('Early stopping of thread.')
         try:
             sample.stop()
         except Exception as e:
