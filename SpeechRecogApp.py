@@ -11,6 +11,7 @@ class SpeechRecogApp(Base.AbstractApplication):
         self.languageLock = Semaphore(0)
         self.textLock = Semaphore(0)
         self.intentLock = Semaphore(0)
+        self.gestureLock = Semaphore(0)
 
         # Attributes of our application
         # Beware that if naming is changed here, the corresponding parameter in DialogeFlow has to be
@@ -19,8 +20,10 @@ class SpeechRecogApp(Base.AbstractApplication):
         self.intendUnderstood = False
 
         # Pass the required Dialogflow parameters (add your Dialogflow parameters)
-        self.setDialogflowKey('sample_diagFl_key.json')
-        self.setDialogflowAgent('sir2019-g7-sample-wfkciw')  # Maybe this must be changed to 'sir2019-g7-sample-wfkciw' which is the project ID
+        self.setDialogflowKey('production_diagFl_key.json')
+        self.setDialogflowAgent('sir-study-buddy-258913')
+        # self.setDialogflowKey('sample_diagFl_key.json')
+        # self.setDialogflowAgent('sir2019-g7-sample-wfkciw')
 
     def main(self):
         logger.debug('Main called...')
@@ -43,8 +46,9 @@ class SpeechRecogApp(Base.AbstractApplication):
 
     def onAudioIntent(self, *args, intentName):
         # Assuming we have a DialogueFlow app for the intent "name"
+        logger.warning(f'Arguments: {args}')
+        logger.warning(f'Intent name: {intentName}')
         if intentName == 'answer_name':
-            logger.info(f'Arguments: {args}')
             if len(args) > 0:
                 self.intendUnderstood = True
                 self.userName = args[0]

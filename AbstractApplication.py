@@ -1,7 +1,7 @@
 import time
 from pathlib import Path
 from threading import Thread
-
+from loguru import logger
 import redis
 
 
@@ -23,7 +23,7 @@ class AbstractApplication(object):
             if message is not None:
                 channel = message['channel'].decode()
                 data = message['data'].decode()
-                #print("received " + data + " on " + channel)
+                logger.info(f"received data: {data} on channel: {channel}")
                 if channel == self.__topics[0]:
                     self.onRobotEvent(event=data)
                 elif channel == self.__topics[1]:
