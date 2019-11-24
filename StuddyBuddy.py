@@ -1,6 +1,7 @@
 import AbstractApplication as Base
 from threading import Semaphore
 # from loguru import logger
+import random
 
 
 class StudyBuddyApp(Base.AbstractApplication):
@@ -17,8 +18,8 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Attributes of our application
         self.intendUnderstood = False
         self.activation = False
-        self.userName = None
         self.studentsFeeling = None
+        self.yesAnswer = True
         self.changingWish = None
         self.schedule = None
         self.timeLeft = None
@@ -33,6 +34,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.setLanguage('en-US')
         self.languageLock.acquire()
 
+        # Robot gets activated
         self.setAudioContext('activation')
         # wait for activation
         self.startListening()
@@ -40,23 +42,42 @@ class StudyBuddyApp(Base.AbstractApplication):
             self.intentLock.acquire(timeout=5)
         self.stopListening()
 
+        # Robot greets friendly and asks how student is doing
+        self.ask('Hi! How are you?', 'students_feeling')
+
+        # Let's fix the students anxiouseness!
+        if self.studentIsAnxious():
+            pass
+
+        # Student seems to be doing fine (not anxious). No scheduling needed
+        else:
+            # TODO: Configure yes_no intend in DialogFlow
+            self.ask('It seems like you are quite positive today. Do you still need any motivation?', 'yes_no')
+            if self.yesAnswer:
+                self.tellRandomMotivationQuote()
+            else:
+                self.stop()
+
     def onAudioIntent(self, *args, intentName):
-        self.intendUnderstood = True
-        if intentName == 'activation':
-            self.activation = True
-        elif intentName == 'answer_name':
-            if len(args) > 0:
-                self.userName = args[0]
-        elif intentName == 'students_feeling':
-            pass
-        elif intentName == 'changing_wish':
-            pass
-        elif intentName == 'schedule':
-            pass
-        elif intentName == 'time_left':
-            pass
-        elif intentName == 'to_do':
-            pass
+        if len(args) > 0:
+            self.intendUnderstood = True
+            if intentName == 'activation':
+                self.activation = True
+            elif intentName == 'students_feeling':
+                self.studentsFeeling = list(args)
+            elif intentName == 'yes_no':
+                if args[0] == 'yes':
+                    self.yesAnswer = True
+                else:
+                    self.yesAnswer = False
+            elif intentName == 'changing_wish':
+                pass
+            elif intentName == 'schedule':
+                pass
+            elif intentName == 'time_left':
+                pass
+            elif intentName == 'to_do':
+                pass
 
     def onRobotEvent(self, event):
         # make sure all our started actions are completed:
@@ -83,6 +104,25 @@ class StudyBuddyApp(Base.AbstractApplication):
                 self.textLock.acquire()
         if attempts == 0:
             raise InteractionException
+
+    def studentIsAnxious(self):
+        # TODO: implement this
+        # Here, we want to do the sentiment analysis
+        raise NotImplementedError
+
+    def tellRandomMotivationQuote(self):
+        quotes = ['The will to win, the desire to succeed, the urge to reach your full potential.Tthese are the keys that will unlock the door to personal excellence.',
+                  'Only you can change my life. No one can do it for you.',
+                  'With the new day comes new strength and new thoughts.',
+                  'Optimism is the faith that leads to achievement. Nothing can be done without hope and confidence.',
+                  'It does not matter how slowly you go as long as you do not stop.',
+                  'Sometimes later becomes never. Do it now.',
+                  'Great things never come from comfort zones.',
+                  'Success does not just find you. You have to go out and get it.']
+        rndm_quote = quotes[random.randint(0, len(quotes) - 1)]
+        self.sayAnimated('And never forget: ' + rndm_quote)
+        self.textLock.acquire()
+        self.stop()
 
 
 class InteractionException(Exception):
