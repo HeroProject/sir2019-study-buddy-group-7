@@ -23,7 +23,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.changingWish = None
         self.schedule = None
         self.timeLeft = None
-        self.toDo = None
+        self.toDos = None
 
         # Pass the required Dialogflow parameters (add your Dialogflow parameters)
         self.setDialogflowKey('production_diagFl_key.json')
@@ -37,17 +37,30 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Robot gets activated
         self.setAudioContext('activation')
         # wait for activation
-        self.startListening()
         while not self.activation:
+            self.startListening()
             self.intentLock.acquire(timeout=5)
-        self.stopListening()
+            self.stopListening()
 
         # Robot greets friendly and asks how student is doing
         self.ask('Hi! How are you?', 'students_feeling')
 
         # Let's fix the students anxiouseness!
         if self.studentIsAnxious():
-            pass
+            # robot amphazises and asks for time
+            self.ask('I am sorry to hear that. How much time do you have left for studying?', 'time_left')
+            self.sayAnimated(self.timeLeft + '? That is quite a lot.')
+            self.textLock.acquire()
+
+            # robot asks for the todos
+            self.ask('What are your to do\'s and how long do you think will each of them take?', 'to_do')
+
+            # calculate the schedule and read it out loud
+            schedule = self.computeSchedule(self.timeLeft, self.toDos)
+            self.sayAnimated(schedule)
+            self.textLock.acquire()
+            # leaving out the "sending email" part here.
+
 
         # Student seems to be doing fine (not anxious). No scheduling needed
         else:
@@ -75,9 +88,9 @@ class StudyBuddyApp(Base.AbstractApplication):
             elif intentName == 'schedule':
                 pass
             elif intentName == 'time_left':
-                pass
+                self.timeLeft = args[0]
             elif intentName == 'to_do':
-                pass
+                self.toDos = list(args)
 
     def onRobotEvent(self, event):
         # make sure all our started actions are completed:
@@ -103,6 +116,7 @@ class StudyBuddyApp(Base.AbstractApplication):
                 self.sayAnimated('Sorry, I didn\'t catch that. Could you please repeat that?')
                 self.textLock.acquire()
         if attempts == 0:
+            self.sayAnimated('Sorry. There seems to be a problem. I am shutting down.')
             raise InteractionException
 
     def studentIsAnxious(self):
@@ -123,6 +137,11 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.sayAnimated('And never forget: ' + rndm_quote)
         self.textLock.acquire()
         self.stop()
+
+    def computeSchedule(self, timeLeft, toDos):
+        # TODO: Implement this
+        # Do the scheduling and return whatever can just be read out by the robot (=string).
+        raise NotImplementedError
 
 
 class InteractionException(Exception):
