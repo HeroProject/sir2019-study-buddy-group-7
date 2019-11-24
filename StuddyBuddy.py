@@ -33,10 +33,17 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.setLanguage('en-US')
         self.languageLock.acquire()
 
+        self.setAudioContext('activation')
+        # wait for activation
+        self.startListening()
+        while not self.activation:
+            self.intentLock.acquire(timeout=5)
+        self.stopListening()
+
     def onAudioIntent(self, *args, intentName):
         self.intendUnderstood = True
         if intentName == 'activation':
-            pass
+            self.activation = True
         elif intentName == 'answer_name':
             if len(args) > 0:
                 self.userName = args[0]
