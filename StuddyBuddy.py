@@ -20,8 +20,8 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.activation = False
         self.studentsFeeling = None
         self.yesAnswer = True
-        self.changingWish = None
-        self.schedule = None
+        # self.changingWish = None
+        # self.schedule = None
         self.timeLeft = None
         self.toDos = None
 
@@ -59,8 +59,10 @@ class StudyBuddyApp(Base.AbstractApplication):
             schedule = self.computeSchedule(self.timeLeft, self.toDos)
             self.sayAnimated(schedule)
             self.textLock.acquire()
-            # leaving out the "sending email" part here.
+            # leaving out the "sending email" and the "reschedule" part.
 
+            # End conversation with motivational quote
+            self.tellRandomMotivationQuote()
 
         # Student seems to be doing fine (not anxious). No scheduling needed
         else:
@@ -68,8 +70,8 @@ class StudyBuddyApp(Base.AbstractApplication):
             self.ask('It seems like you are quite positive today. Do you still need any motivation?', 'yes_no')
             if self.yesAnswer:
                 self.tellRandomMotivationQuote()
-            else:
-                self.stop()
+
+        self.stop()
 
     def onAudioIntent(self, *args, intentName):
         if len(args) > 0:
@@ -83,10 +85,10 @@ class StudyBuddyApp(Base.AbstractApplication):
                     self.yesAnswer = True
                 else:
                     self.yesAnswer = False
-            elif intentName == 'changing_wish':
-                pass
-            elif intentName == 'schedule':
-                pass
+            # elif intentName == 'changing_wish':
+            #     pass
+            # elif intentName == 'schedule':
+            #     pass
             elif intentName == 'time_left':
                 self.timeLeft = args[0]
             elif intentName == 'to_do':
@@ -136,7 +138,6 @@ class StudyBuddyApp(Base.AbstractApplication):
         rndm_quote = quotes[random.randint(0, len(quotes) - 1)]
         self.sayAnimated('And never forget: ' + rndm_quote)
         self.textLock.acquire()
-        self.stop()
 
     def computeSchedule(self, timeLeft, toDos):
         # TODO: Implement this
@@ -154,7 +155,6 @@ if __name__ == '__main__':
     try:
         # Run the application
         sample.main()
-        sample.stop()
     except KeyboardInterrupt:
         try:
             sample.stop()
