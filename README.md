@@ -26,6 +26,16 @@ We only have limited access to the Nao hardware. We will develop as follows:
 
 ---
 
+## Semaphores
+
+Quite good, short explanation:
+A semaphore manages an internal counter which is decremented by each acquire() call and incremented by each release() call. The counter can never go below zero; when acquire() finds that it is zero, it blocks, waiting until some other thread calls release().
+https://www.bogotobogo.com/python/Multithread/python_multithreading_Synchronization_Semaphore_Objects_Thread_Pool.php
+
+This means that the whole programm is blocked, until the release() method is called. In our case we want that to happen when a corresponding "done" event is sent.
+
+---
+
 ## Development Tasks
 
 - [x] Configure everyon's development environments
