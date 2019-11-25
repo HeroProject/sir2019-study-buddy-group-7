@@ -52,6 +52,8 @@ class StudyBuddyApp(Base.AbstractApplication):
         try:
             with open('config/config.json', 'r') as cfile:
                 self.config_data = json.load(cfile)
+                self.questions = self.config_data['questions']
+                self.responses = self.config_data['responses']
                 logger.debug('Loaded JSON config')
         except Exception as e:
             logger.error(f'JSON loading failed with: {e}')
@@ -76,15 +78,14 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
-        self.ask('Hi! How are you?', 'students_feeling')
+        self.ask(self.questions['students_feeling'], 'students_feeling')
 
         # Let's fix the students anxiouseness!
         if self.student_is_anxious():
             # robot empathises and asks for time
             logger.info(
                 'Empathising with anxious student and ask time remaining')
-            self.ask(
-                'I am sorry to hear that. How many hours do you have left before your deadline?', 'time_left')
+            self.ask(self.questions['time_left'], 'time_left')
             logger.info(f'Student has {self.hours_remaining} remaining')
             self.say_animated(
                 f'{self.hours_remaining}? With my help, that should be enough to get it all done!')
@@ -92,8 +93,7 @@ class StudyBuddyApp(Base.AbstractApplication):
 
             # robot asks for the todos
             logger.info('Asking student for estimated workload')
-            self.ask(
-                'How many hours of studying do you think you still need to do to be prepared?', 'to_do')
+            self.ask(self.questions['to_do'], 'to_do')
 
             # calculate the schedule and read it out loud
             schedule = self.compute_schedule(
@@ -108,8 +108,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Student seems to be doing fine (not anxious). No scheduling needed
         else:
             # TODO: Configure yes_no intend in DialogFlow
-            self.ask(
-                'It seems like you are quite positive today. Do you still need any motivation?', 'yes_no')
+            self.ask(self.questions['extra_motivation'], 'yes_no')
             if self.yes_answer:
                 logger.info('Student requested motivation')
                 self.tell_random_quote()
@@ -158,18 +157,16 @@ class StudyBuddyApp(Base.AbstractApplication):
             self.intent_lock.acquire(timeout=timeout)
             self.stop_listening()
             if not self.intent_understood and attempts > 0:
-                self.say_animated(
-                    'Sorry, I didn\'t catch that. Could you please repeat that?')
+                self.say_animated(self.responses['please_repeat'])
                 self.text_lock.acquire()
         if attempts == 0:
-            self.say_animated(
-                'Sorry. There seems to be a problem. I am shutting down.')
+            self.say_animated(self.responses['repeat_timeout'])
             raise InteractionException
 
     def student_is_anxious(self):
         if len(self.student_feeling) == 0:
             logger.error(
-                f'Could not retrieve student feelings text to test anxiety.')
+                f'Could not retrieve student feelings to test anxiety.')
             raise InteractionException
         resp = self.student_feeling
         logger.debug(f'Analysing sentiment of {resp}')

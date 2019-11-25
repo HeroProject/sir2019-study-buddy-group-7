@@ -1,0 +1,21 @@
+{"motivational_quotes": [
+    "The will to win, the desire to succeed, the urge to reach your full potential. These are the keys that will unlock the door to personal excellence.",
+    "Only you can change my life. No one can do it for you.",
+    "With the new day comes new strength and new thoughts.",
+    "Optimism is the faith that leads to achievement. Nothing can be done without hope and confidence.",
+    "It does not matter how slowly you go as long as you do not stop.",
+    "Sometimes later becomes never. Do it now.",
+    "Great things never come from comfort zones.",
+    "Success does not just find you. You have to go out and get it."
+    ],
+"questions": {
+    "students_feeling": "Hi! How are you?",
+    "time_left": "I am sorry to hear that. How many hours do you have left before your deadline?",
+    "to_do": "How many hours of studying do you think you still need to do to be prepared?",
+    "extra_motivation": "It seems like you are quite positive today. Do you still need any motivation?"
+},
+"responses": {
+    "please_repeat": "Sorry, I didn't hear you. Can you please repeat that?",
+    "repeat_timeout": "Sorry, there seems to be a problem. I am shutting down."
+}
+}
