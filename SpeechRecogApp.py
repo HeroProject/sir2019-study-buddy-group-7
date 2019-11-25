@@ -35,11 +35,12 @@ class SpeechRecogApp(Base.AbstractApplication):
         self.textLock.acquire()
         logger.debug('Lock acquired. Running...')
         try:
-            self.ask('What\'s your name?', 'answer_name')
-            self.sayAnimated('Oh hi ' + self.userName)
+            self.ask('How are you feeling?', 'students_feeling', timeout=5)
+            # self.sayAnimated('Oh hi ' + self.userName)
+            # self.say('\\vol=100\\\\vct=100\\\\emph=2\\This is a test of speaking.')
             self.textLock.acquire()
         except InteractionException:
-            self.sayAnimated('Sorry, it was not possible to understand your name. I will go to standby mode now.')
+            self.sayAnimated('Sorry, it was not possible to understand you. I will go to standby mode now.')
             self.textLock.acquire()
             # self.main()
 
@@ -48,9 +49,9 @@ class SpeechRecogApp(Base.AbstractApplication):
         # Assuming we have a DialogueFlow app for the intent "name"
         logger.warning(f'Arguments: {args}')
         logger.warning(f'Intent name: {intentName}')
-        if intentName == 'answer_name':
-            if len(args) > 0:
-                self.intendUnderstood = True
+        if len(args) > 0 and intentName is not None:
+            self.intendUnderstood = True
+            if intentName == 'answer_name':
                 self.userName = args[0]
 
     def onRobotEvent(self, event):
@@ -72,7 +73,6 @@ class SpeechRecogApp(Base.AbstractApplication):
         self.intendUnderstood = False
         while attempts > 0 and not self.intendUnderstood:
             logger.debug(f'Attempts: {attempts}')
-            attempts -= 1
             self.setAudioContext(audioContext)
             self.startListening()
             self.intentLock.acquire(timeout=timeout)
@@ -80,6 +80,7 @@ class SpeechRecogApp(Base.AbstractApplication):
             if not self.intendUnderstood and attempts > 0:
                 self.sayAnimated('Sorry, I didn\'t catch that. Could you please repeat that?')
                 self.textLock.acquire()
+            attempts -= 1
         if attempts == 0:
             raise InteractionException
 

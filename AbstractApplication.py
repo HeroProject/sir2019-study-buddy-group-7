@@ -23,7 +23,7 @@ class AbstractApplication(object):
             if message is not None:
                 channel = message['channel'].decode()
                 data = message['data'].decode()
-                logger.info(f"received data: {data} on channel: {channel}")
+                logger.info(f"received data: '{data}' on channel: {channel}")
                 if channel == self.__topics[0]:
                     self.onRobotEvent(event=data)
                 elif channel == self.__topics[1]:
@@ -34,7 +34,7 @@ class AbstractApplication(object):
                     self.onAudioLanguage(languageKey=data)
                 elif channel == self.__topics[4]:
                     data = data.split("|")
-                    self.onAudioIntent(intentName=data[0], *data[1:])
+                    self.onAudioIntent(data, intentName=data[0])
                 elif channel == self.__topics[5]:
                     self.onNewAudioFile(audioFile=data)
                 elif channel == self.__topics[6]:
