@@ -29,24 +29,24 @@ class StudyBuddyApp(Base.AbstractApplication):
         super().__init__()
 
         # Semaphores for async execution. They make sure that the action is completed.
-        self.languageLock = Semaphore(0)
-        self.textLock = Semaphore(0)
-        self.intentLock = Semaphore(0)
-        self.gestureLock = Semaphore(0)
+        self.language_lock = Semaphore(0)
+        self.text_lock = Semaphore(0)
+        self.intent_lock = Semaphore(0)
+        self.gesture_lock = Semaphore(0)
 
         # Attributes of our application
-        self.intentUnderstood = False
+        self.intent_understood = False
         self.activation = False
-        self.studentsFeeling = None
-        self.yesAnswer = True
-        # self.changingWish = None
+        self.student_feeling = None
+        self.yes_answer = True
+        # self.changing_wish = None
         # self.schedule = None
-        self.timeLeft = None
-        self.toDos = None
+        self.hours_remaining = None
+        self.hours_needed = None
 
         # Pass the required Dialogflow parameters (add your Dialogflow parameters)
-        self.setDialogflowKey('production_diagFl_key.json')
-        self.setDialogflowAgent('sir-study-buddy-258913')
+        self.set_dialogflow_key('production_diagFl_key.json')
+        self.set_dialogflow_agent('sir-study-buddy-258913')
 
         # Import data from config file
         try:
@@ -60,18 +60,18 @@ class StudyBuddyApp(Base.AbstractApplication):
     def main(self):
         # Setting language
         logger.info('Setting language')
-        self.setLanguage('en-US')
-        self.languageLock.acquire()
+        self.set_language('en-US')
+        self.language_lock.acquire()
 
         # Robot gets activated
         logger.info('Activating Nao')
-        self.setAudioContext('activation')
+        self.set_audio_context('activation')
         # wait for activation
         while not self.activation:
-            self.startListening()
+            self.start_listening()
             logger.debug('Listening...')
-            self.intentLock.acquire(timeout=5)
-            self.stopListening()
+            self.intent_lock.acquire(timeout=5)
+            self.stop_listening()
             logger.debug('Not listening...')
 
         # Robot greets friendly and asks how student is doing
@@ -79,16 +79,16 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.ask('Hi! How are you?', 'students_feeling')
 
         # Let's fix the students anxiouseness!
-        if self.studentIsAnxious():
+        if self.student_is_anxious():
             # robot empathises and asks for time
             logger.info(
                 'Empathising with anxious student and ask time remaining')
             self.ask(
                 'I am sorry to hear that. How many hours do you have left before your deadline?', 'time_left')
-            logger.info(f'Student has {self.timeLeft} remaining')
-            self.sayAnimated(
-                f'{self.timeLeft}? With my help, that should be enough to get it all done!')
-            self.textLock.acquire()
+            logger.info(f'Student has {self.hours_remaining} remaining')
+            self.say_animated(
+                f'{self.hours_remaining}? With my help, that should be enough to get it all done!')
+            self.text_lock.acquire()
 
             # robot asks for the todos
             logger.info('Asking student for estimated workload')
@@ -96,81 +96,82 @@ class StudyBuddyApp(Base.AbstractApplication):
                 'How many hours of studying do you think you still need to do to be prepared?', 'to_do')
 
             # calculate the schedule and read it out loud
-            schedule = self.computeSchedule(self.timeLeft, self.toDos)
+            schedule = self.compute_schedule(
+                self.hours_remaining, self.hours_needed)
             logger.debug('Reading schedule...')
-            self.sayAnimated(schedule)
-            self.textLock.acquire()
+            self.say_animated(schedule)
+            self.text_lock.acquire()
 
             # End conversation with motivational quote
-            self.tellRandomMotivationQuote()
+            self.tell_random_quote()
 
         # Student seems to be doing fine (not anxious). No scheduling needed
         else:
             # TODO: Configure yes_no intend in DialogFlow
             self.ask(
                 'It seems like you are quite positive today. Do you still need any motivation?', 'yes_no')
-            if self.yesAnswer:
+            if self.yes_answer:
                 logger.info('Student requested motivation')
-                self.tellRandomMotivationQuote()
+                self.tell_random_quote()
 
         logger.debug('Stopping')
         self.stop()
 
-    def onAudioIntent(self, *args, intentName):
+    def on_audio_intent(self, *args, intent_name):
         if len(args) > 0:
-            self.intentUnderstood = True
-            if intentName == 'activation':
+            self.intent_understood = True
+            if intent_name == 'activation':
                 self.activation = True
-            elif intentName == 'students_feeling':
-                self.studentsFeeling = list(args)
-            elif intentName == 'yes_no':
+            elif intent_name == 'students_feeling':
+                self.student_feeling = list(args)
+            elif intent_name == 'yes_no':
                 if args[0] == 'yes':
-                    self.yesAnswer = True
+                    self.yes_answer = True
                 else:
-                    self.yesAnswer = False
-            elif intentName == 'time_left':
-                self.timeLeft = args[0]
-            elif intentName == 'to_do':
-                self.toDos = list(args)
-            elif intentName in ['changing_wish', 'schedule']:
-                logger.error(f'Intent: {intentName} not implemented.')
+                    self.yes_answer = False
+            elif intent_name == 'time_left':
+                self.hours_remaining = args[0]
+            elif intent_name == 'to_do':
+                self.hours_needed = list(args)
+            elif intent_name in ['changing_wish', 'schedule']:
+                logger.error(f'Intent: {intent_name} not implemented.')
                 raise NotImplementedError
 
-    def onRobotEvent(self, event):
+    def on_robot_event(self, event):
         #TODO make sure all our started actions are completed
         if event == 'TextDone':
-            self.textLock.release()
+            self.text_lock.release()
         elif event == 'LanguageChanged':
-            self.languageLock.release()
+            self.language_lock.release()
 
     def ask(self, question, audioContext, attempts=3, timeout=5):
         # We only want the question to be asked once, right?
-        self.sayAnimated(question)
-        self.textLock.acquire()
+        self.say_animated(question)
+        self.text_lock.acquire()
 
         # new question, new stuff to understand
-        self.intentUnderstood = False
-        while attempts > 0 and not self.intentUnderstood:
+        self.intent_understood = False
+        while attempts > 0 and not self.intent_understood:
             attempts -= 1
-            self.setAudioContext(audioContext)
-            self.startListening()
-            self.intentLock.acquire(timeout=timeout)
-            self.stopListening()
-            if not self.intentUnderstood and attempts > 0:
-                self.sayAnimated(
+            self.set_audio_context(audioContext)
+            self.start_listening()
+            self.intent_lock.acquire(timeout=timeout)
+            self.stop_listening()
+            if not self.intent_understood and attempts > 0:
+                self.say_animated(
                     'Sorry, I didn\'t catch that. Could you please repeat that?')
-                self.textLock.acquire()
+                self.text_lock.acquire()
         if attempts == 0:
-            self.sayAnimated(
+            self.say_animated(
                 'Sorry. There seems to be a problem. I am shutting down.')
             raise InteractionException
 
-    def studentIsAnxious(self):
-        if len(self.studentsFeeling) == 0:
+    def student_is_anxious(self):
+        if len(self.student_feeling) == 0:
             logger.error(
                 f'Could not retrieve student feelings text to test anxiety.')
             raise InteractionException
-        resp = self.studentsFeeling
+        resp = self.student_feeling
         logger.debug(f'Analysing sentiment of {resp}')
         sent = TextBlob(resp).sentiment
         polarity = sent.polarity
@@ -183,13 +184,13 @@ class StudyBuddyApp(Base.AbstractApplication):
         logger.info('Student NOT classified as anxious.')
         return False
 
-    def tellRandomMotivationQuote(self):
+    def tell_random_quote(self):
         quotes = self.config_data['motivational_quotes']
         rndm_quote = quotes[random.randint(0, len(quotes) - 1)]
-        self.sayAnimated('And never forget: ' + rndm_quote)
-        self.textLock.acquire()
+        self.say_animated('And never forget: ' + rndm_quote)
+        self.text_lock.acquire()
 
-    def computeSchedule(self, timeLeft, timeNeeded):
+    def compute_schedule(self, timeLeft, timeNeeded):
         logger.info(
             f'Computing schedule for {timeNeeded}h work in {timeLeft}h time')
         return make_schedule(timeNeeded, timeLeft)
