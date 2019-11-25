@@ -1,3 +1,4 @@
-redis
-hiredis
-loguru
+loguru==0.3.2
+redis==3.3.11
+textblob==0.15.3
+nltk==3.4.5
