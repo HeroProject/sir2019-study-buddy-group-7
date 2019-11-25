@@ -77,7 +77,7 @@ class AbstractApplication(object):
 
     def on_face_recognized(self, identifier):
         """Triggered when a specific face was detected in front of the robot (after a startWatching action was called).
-        On_audio_lanon_audio_languagethe face recognition service is running. Will be sent as long as the face is recognised.
+        Only sent when the face recognition service is running. Will be sent as long as the face is recognised.
         The identifiers of recognised faces are stored in a file, and will thus persist over a restart of the agent."""
         pass
 
@@ -88,11 +88,11 @@ class AbstractApplication(object):
 
     def on_audio_intent(self, *args, intentName):
         """Triggered whenever an intent was detected (by Dialogflow) on a user's speech.
-        on_new_audio_file(me of intent and a list of optional parameters (following from the dialogflow spec).
+        Given is the name of intent and a list of optional parameters (following from the dialogflow spec).
         See https://cloud.google.com/dialogflow/docs/intents-actions-parameters.
-        Th_speech_text( as soon as an intent is recognised, which is always after some startListening action,
+        These are sent as soon as an intent is recognised, which is always after some startListening action,
         but might come in some time after the final stopListening action (if there was some intent detected at least).
-        In_new_picture_filep being recognised until stopListening is called."""
+        Intents will keep being recognised until stopListening is called."""
         pass
 
     def on_new_audio_file(self, audioFile):
