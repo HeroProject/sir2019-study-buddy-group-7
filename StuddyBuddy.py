@@ -7,6 +7,8 @@ import nltk
 from datetime import datetime
 import sys
 import os
+import json
+
 
 SETUP_MODE = False
 LOGDIR = 'logs/'
@@ -33,7 +35,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.gestureLock = Semaphore(0)
 
         # Attributes of our application
-        self.intendUnderstood = False
+        self.intentUnderstood = False
         self.activation = False
         self.studentsFeeling = None
         self.yesAnswer = True
@@ -45,6 +47,15 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Pass the required Dialogflow parameters (add your Dialogflow parameters)
         self.setDialogflowKey('production_diagFl_key.json')
         self.setDialogflowAgent('sir-study-buddy-258913')
+
+        # Import data from config file
+        try:
+            with open('config/config.json', 'r') as cfile:
+                self.config_data = json.load(cfile)
+                logger.debug('Loaded JSON config')
+        except Exception as e:
+            logger.error(f'JSON loading failed with: {e}')
+            raise e
 
     def main(self):
         # Setting language
@@ -106,7 +117,7 @@ class StudyBuddyApp(Base.AbstractApplication):
 
     def onAudioIntent(self, *args, intentName):
         if len(args) > 0:
-            self.intendUnderstood = True
+            self.intentUnderstood = True
             if intentName == 'activation':
                 self.activation = True
             elif intentName == 'students_feeling':
@@ -116,17 +127,16 @@ class StudyBuddyApp(Base.AbstractApplication):
                     self.yesAnswer = True
                 else:
                     self.yesAnswer = False
-            # elif intentName == 'changing_wish':
-            #     pass
-            # elif intentName == 'schedule':
-            #     pass
             elif intentName == 'time_left':
                 self.timeLeft = args[0]
             elif intentName == 'to_do':
                 self.toDos = list(args)
+            elif intentName in ['changing_wish', 'schedule']:
+                logger.error(f'Intent: {intentName} not implemented.')
+                raise NotImplementedError
 
     def onRobotEvent(self, event):
-        """make sure all our started actions are completed"""
+        #TODO make sure all our started actions are completed
         if event == 'TextDone':
             self.textLock.release()
         elif event == 'LanguageChanged':
@@ -138,14 +148,14 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.textLock.acquire()
 
         # new question, new stuff to understand
-        self.intendUnderstood = False
-        while attempts > 0 and not self.intendUnderstood:
+        self.intentUnderstood = False
+        while attempts > 0 and not self.intentUnderstood:
             attempts -= 1
             self.setAudioContext(audioContext)
             self.startListening()
             self.intentLock.acquire(timeout=timeout)
             self.stopListening()
-            if not self.intendUnderstood and attempts > 0:
+            if not self.intentUnderstood and attempts > 0:
                 self.sayAnimated(
                     'Sorry, I didn\'t catch that. Could you please repeat that?')
                 self.textLock.acquire()
@@ -173,15 +183,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         return False
 
     def tellRandomMotivationQuote(self):
-        quotes = [
-            'The will to win, the desire to succeed, the urge to reach your full potential. These are the keys that will unlock the door to personal excellence.',
-            'Only you can change my life. No one can do it for you.',
-            'With the new day comes new strength and new thoughts.',
-            'Optimism is the faith that leads to achievement. Nothing can be done without hope and confidence.',
-            'It does not matter how slowly you go as long as you do not stop.',
-            'Sometimes later becomes never. Do it now.',
-            'Great things never come from comfort zones.',
-            'Success does not just find you. You have to go out and get it.']
+        quotes = self.config_data['motivational_quotes']
         rndm_quote = quotes[random.randint(0, len(quotes) - 1)]
         self.sayAnimated('And never forget: ' + rndm_quote)
         self.textLock.acquire()
