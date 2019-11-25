@@ -2,6 +2,7 @@ import AbstractApplication as Base
 from threading import Semaphore
 from loguru import logger
 
+
 class SpeechRecogApp(Base.AbstractApplication):
     # setup our Application
     def __init__(self):
@@ -14,8 +15,6 @@ class SpeechRecogApp(Base.AbstractApplication):
         self.gestureLock = Semaphore(0)
 
         # Attributes of our application
-        # Beware that if naming is changed here, the corresponding parameter in DialogeFlow has to be
-        # changed as well if it exists
         self.userName = None
         self.intendUnderstood = False
 
@@ -42,11 +41,9 @@ class SpeechRecogApp(Base.AbstractApplication):
         except InteractionException:
             self.sayAnimated('Sorry, it was not possible to understand you. I will go to standby mode now.')
             self.textLock.acquire()
-            # self.main()
-
 
     def onAudioIntent(self, *args, intentName):
-        # Assuming we have a DialogueFlow app for the intent "name"
+        # Assuming we have a DialogueFlow app for the intent "answer_name"
         logger.warning(f'Arguments: {args}')
         logger.warning(f'Intent name: {intentName}')
         if len(args) > 0 and intentName is not None:
@@ -61,7 +58,7 @@ class SpeechRecogApp(Base.AbstractApplication):
         elif event == 'LanguageChanged':
             self.languageLock.release()
 
-        # print what is going on
+        # log what is going on
         logger.debug(event)
 
     def ask(self, question, audioContext, attempts=3, timeout=5):
@@ -88,6 +85,7 @@ class SpeechRecogApp(Base.AbstractApplication):
 class InteractionException(Exception):
     def __init__(self):
         super().__init__()
+
 
 if __name__ == '__main__':
     logger.debug('Initialising the speech recognition app.')
