@@ -10,6 +10,8 @@ import os
 import json
 from scheduler import make_schedule
 
+from emotion_wrapper import add_emotion
+
 SETUP_MODE = False
 LOGDIR = 'logs/'
 
@@ -79,6 +81,8 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
         self.ask(self.questions['students_feeling'], 'students_feeling')
+        ## Example of add_emotion usage
+        # self.ask(add_emotion(self.questions['students_feeling']), 'students_feeling')
 
         # Let's fix the students anxiouseness!
         if self.student_is_anxious():
