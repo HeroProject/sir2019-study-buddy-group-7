@@ -8,7 +8,7 @@ from datetime import datetime
 import sys
 import os
 import json
-
+from scheduler import make_schedule
 
 SETUP_MODE = False
 LOGDIR = 'logs/'
@@ -97,9 +97,9 @@ class StudyBuddyApp(Base.AbstractApplication):
 
             # calculate the schedule and read it out loud
             schedule = self.computeSchedule(self.timeLeft, self.toDos)
+            logger.debug('Reading schedule...')
             self.sayAnimated(schedule)
             self.textLock.acquire()
-            # leaving out the "sending email" and the "reschedule" part.
 
             # End conversation with motivational quote
             self.tellRandomMotivationQuote()
@@ -112,6 +112,7 @@ class StudyBuddyApp(Base.AbstractApplication):
             if self.yesAnswer:
                 logger.info('Student requested motivation')
                 self.tellRandomMotivationQuote()
+
         logger.debug('Stopping')
         self.stop()
 
@@ -188,10 +189,10 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.sayAnimated('And never forget: ' + rndm_quote)
         self.textLock.acquire()
 
-    def computeSchedule(self, timeLeft, toDos):
-        # TODO: Implement this
-        # Do the scheduling and return whatever can just be read out by the robot (=string).
-        raise NotImplementedError
+    def computeSchedule(self, timeLeft, timeNeeded):
+        logger.info(
+            f'Computing schedule for {timeNeeded}h work in {timeLeft}h time')
+        return make_schedule(timeNeeded, timeLeft)
 
 
 class InteractionException(Exception):
