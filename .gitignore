@@ -131,3 +131,7 @@ dmypy.json
 # Ignore log files
 *.log
 logs/
+# Pycharm
+.idea/*
+# Don't commit the secrets for DialogFLow
+*key.json
