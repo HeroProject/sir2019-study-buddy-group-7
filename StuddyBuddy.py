@@ -69,14 +69,15 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Robot gets activated
         logger.info('Activating Nao')
-        self.set_audio_context('activation')
+        self.say('Hello, I am your study buddy.')
+        self.text_lock.acquire()
         # wait for activation
+        self.activation = True
         while not self.activation:
+            self.set_audio_context('activation')
             self.start_listening()
-            logger.debug('Listening...')
             self.intent_lock.acquire(timeout=5)
             self.stop_listening()
-            logger.debug('Not listening...')
 
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
@@ -111,7 +112,7 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Student seems to be doing fine (not anxious). No scheduling needed
         else:
-            # TODO: Configure yes_no intend in DialogFlow
+            # TODO: Configure yes_no intent in DialogFlow
             self.ask(self.questions['extra_motivation'], 'yes_no')
             if self.yes_answer:
                 logger.info('Student requested motivation')
@@ -121,6 +122,8 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.stop()
 
     def on_audio_intent(self, *args, intent_name):
+        logger.debug(f'Audio intent: {intent_name}')
+        logger.debug(f'Audio intent args: {args}')
         if len(args) > 0:
             self.intent_understood = True
             if intent_name == 'activation':
@@ -151,10 +154,11 @@ class StudyBuddyApp(Base.AbstractApplication):
         # We only want the question to be asked once, right?
         self.say_animated(question)
         self.text_lock.acquire()
-
+        # import ipdb; ipdb.set_trace()
         # new question, new stuff to understand
         self.intent_understood = False
         while attempts > 0 and not self.intent_understood:
+            logger.debug(f'Attempts {attempts}| audioContext {audioContext}')
             attempts -= 1
             self.set_audio_context(audioContext)
             self.start_listening()

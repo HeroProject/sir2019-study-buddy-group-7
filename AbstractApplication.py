@@ -41,7 +41,7 @@ class AbstractApplication(object):
                     self.on_audio_language(languageKey=data)
                 elif channel == self.__topics[4]:
                     data = data.split("|")
-                    self.on_audio_intent(intentName=data[0], *data[1:])
+                    self.on_audio_intent(*data[1:], intent_name=data[0])
                 elif channel == self.__topics[5]:
                     self.on_new_audio_file(audioFile=data)
                 elif channel == self.__topics[6]:
@@ -86,7 +86,7 @@ class AbstractApplication(object):
         Given is the full language key (e.g. nl-NL or en-US)."""
         pass
 
-    def on_audio_intent(self, *args, intentName):
+    def on_audio_intent(self, *args, intent_name='unknown'):
         """Triggered whenever an intent was detected (by Dialogflow) on a user's speech.
         Given is the name of intent and a list of optional parameters (following from the dialogflow spec).
         See https://cloud.google.com/dialogflow/docs/intents-actions-parameters.
@@ -144,11 +144,13 @@ class AbstractApplication(object):
     def start_listening(self):
         """Tell the robot (and Dialogflow) to start listening to audio (and potentially recording it).
         Intents will be continuously recognised. At some point stopListening needs to be called!"""
+        logger.debug('Start listening')
         self.__send('action_audio', 'start listening')
 
     def stop_listening(self):
         """Tell the robot (and Dialogflow) to stop listening to audio.
         Note that a potentially recognized intent might come in up to a second after this call."""
+        logger.debug('Stop listening')
         self.__send('action_audio', 'stop listening')
 
     def set_idle(self):
@@ -174,6 +176,7 @@ class AbstractApplication(object):
     def say(self, text):
         """A string that the robot should say (in the currently selected language!).
         A TextStarted event will be sent when the speaking starts and a TextDone event after it is finished."""
+        logger.debug(f"Saying '{text}'")
         self.__send('action_say', text)
 
     def say_animated(self, text):
