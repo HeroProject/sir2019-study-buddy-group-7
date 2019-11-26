@@ -75,12 +75,12 @@ class StudyBuddyApp(Base.AbstractApplication):
         while not self.activation:
             self.set_audio_context('activation')
             self.start_listening()
-            self.intent_lock.acquire(timeout=7)
+            self.intent_lock.acquire(timeout=5)
             self.stop_listening()
 
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
-        self.ask(self.questions['students_feeling'], 'students_feeling')
+        self.ask(self.questions['students_feeling'], 'students_feeling', timeout=10)
         ## Example of add_emotion usage
         # self.ask(add_emotion(self.questions['students_feeling']), 'students_feeling')
 
