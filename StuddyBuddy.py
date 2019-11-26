@@ -69,14 +69,13 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Robot gets activated
         logger.info('Activating Nao')
-        self.say('Hello, I am your study buddy.')
+        self.say('Beep beep.')
         self.text_lock.acquire()
         # wait for activation
-        self.activation = True
         while not self.activation:
             self.set_audio_context('activation')
             self.start_listening()
-            self.intent_lock.acquire(timeout=5)
+            self.intent_lock.acquire(timeout=7)
             self.stop_listening()
 
         # Robot greets friendly and asks how student is doing
@@ -98,15 +97,15 @@ class StudyBuddyApp(Base.AbstractApplication):
 
             # robot asks for the todos
             logger.info('Asking student for estimated workload')
-            self.ask(self.questions['to_do'], 'to_do')
+            self.ask(self.questions['time_needed'], 'time_needed')
 
             # calculate the schedule and read it out loud
             schedule = self.compute_schedule(
                 self.hours_remaining, self.hours_needed)
-            logger.debug('Reading schedule...')
-            self.say_animated(schedule)
+            logger.debug(f'Schedule: {schedule}')
+            logger.info('Reading schedule...')
+            self.say_animated(f'Here is your study schedule: {schedule}')
             self.text_lock.acquire()
-
             # End conversation with motivational quote
             self.tell_random_quote()
 
@@ -121,7 +120,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         logger.debug('Stopping')
         self.stop()
 
-    def on_audio_intent(self, *args, intent_name):
+    def on_audio_intent(self, intent_name, *args):
         logger.debug(f'Audio intent: {intent_name}')
         logger.debug(f'Audio intent args: {args}')
         if len(args) > 0:
@@ -137,7 +136,7 @@ class StudyBuddyApp(Base.AbstractApplication):
                     self.yes_answer = False
             elif intent_name == 'time_left':
                 self.hours_remaining = args[0]
-            elif intent_name == 'to_do':
+            elif intent_name == 'time_needed':
                 self.hours_needed = list(args)
             elif intent_name in ['changing_wish', 'schedule']:
                 logger.error(f'Intent: {intent_name} not implemented.')
@@ -176,7 +175,7 @@ class StudyBuddyApp(Base.AbstractApplication):
             logger.error(
                 f'Could not retrieve student feelings to test anxiety.')
             raise InteractionException
-        resp = self.student_feeling
+        resp = self.student_feeling[0]
         logger.debug(f'Analysing sentiment of {resp}')
         sent = TextBlob(resp).sentiment
         polarity = sent.polarity
@@ -198,7 +197,8 @@ class StudyBuddyApp(Base.AbstractApplication):
     def compute_schedule(self, timeLeft, timeNeeded):
         logger.info(
             f'Computing schedule for {timeNeeded}h work in {timeLeft}h time')
-        return make_schedule(timeNeeded, timeLeft)
+        sched = make_schedule(timeNeeded, timeLeft)
+        return '. '.join(sched)
 
 
 class InteractionException(Exception):

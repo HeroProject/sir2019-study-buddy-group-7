@@ -11,7 +11,7 @@
 "questions": {
     "students_feeling": "Hi! How are you?",
     "time_left": "I am sorry to hear that. How many hours do you have left before your deadline?",
-    "to_do": "How many hours of studying do you think you still need to do to be prepared?",
+    "time_needed": "How many hours of studying do you think you still need to do to be prepared?",
     "extra_motivation": "It seems like you are quite positive today. Do you still need any motivation?"
 },
 "responses": {

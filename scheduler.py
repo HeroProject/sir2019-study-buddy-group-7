@@ -30,7 +30,6 @@ def make_schedule(time_est: int, time_remaining: int, start_hour=None, fudge_rat
             bin_start = stringify_time(time_stamp)
             # bin_end = stringify_time(time_stamp + 0.5)
             bin_assignments.append(f'At {bin_start}, {btype}')
-        print(i, time_stamp, btype)
         last_activity = btype
         time_stamp += 0.5
         if time_stamp > 24.0:

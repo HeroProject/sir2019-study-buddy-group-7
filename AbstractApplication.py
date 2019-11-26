@@ -40,8 +40,10 @@ class AbstractApplication(object):
                 elif channel == self.__topics[3]:
                     self.on_audio_language(languageKey=data)
                 elif channel == self.__topics[4]:
+                    print(data)
                     data = data.split("|")
-                    self.on_audio_intent(*data[1:], intent_name=data[0])
+                    print(data)
+                    self.on_audio_intent(data[0], *data[1:])
                 elif channel == self.__topics[5]:
                     self.on_new_audio_file(audioFile=data)
                 elif channel == self.__topics[6]:
@@ -86,7 +88,7 @@ class AbstractApplication(object):
         Given is the full language key (e.g. nl-NL or en-US)."""
         pass
 
-    def on_audio_intent(self, *args, intent_name='unknown'):
+    def on_audio_intent(self, intent_name, *args,):
         """Triggered whenever an intent was detected (by Dialogflow) on a user's speech.
         Given is the name of intent and a list of optional parameters (following from the dialogflow spec).
         See https://cloud.google.com/dialogflow/docs/intents-actions-parameters.
