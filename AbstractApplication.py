@@ -182,6 +182,7 @@ class AbstractApplication(object):
         logger.debug(f"Saying '{text}'")
         if emotion is not None:
             text = add_emotion(text, emotion=emotion)
+            logger.debug(f"Saying '{text}'")
         self.__send('action_say', text)
 
     def say_animated(self, text, emotion=None):
@@ -193,6 +194,7 @@ class AbstractApplication(object):
         logger.debug(f"Saying (anim.) '{text}'")
         if emotion is not None:
             text = add_emotion(text, emotion=emotion)
+            logger.debug(f"Saying (anim.) '{text}'")
         self.__send('action_say_animated', text)
 
     def do_gesture(self, gesture):
