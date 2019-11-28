@@ -81,6 +81,8 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
         self.ask(self.questions['students_feeling'], 'students_feeling', timeout=7, emotion='empathetic')
+        ## Example of add_emotion usage
+        # self.ask(add_emotion(self.questions['students_feeling'], 'happy'), 'students_feeling')
 
         # Let's fix the students anxiouseness!
         if self.student_is_anxious():
