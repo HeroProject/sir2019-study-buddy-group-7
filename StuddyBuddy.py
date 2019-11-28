@@ -114,6 +114,9 @@ class StudyBuddyApp(Base.AbstractApplication):
             if self.yes_answer:
                 logger.info('Student requested motivation')
                 self.tell_random_quote()
+            else:
+                self.say_animated('Okay. Good luck with your studies. You can ask me for help anytime!', emotion='happy')
+                self.text_lock.acquire()
 
         logger.debug('Stopping')
         self.stop()
