@@ -80,7 +80,8 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
-        self.ask(self.questions['students_feeling'], 'students_feeling', timeout=10)
+        self.ask(self.questions['students_feeling'],
+                 'students_feeling', timeout=10)
         ## Example of add_emotion usage
         # self.ask(add_emotion(self.questions['students_feeling']), 'students_feeling')
 
@@ -104,7 +105,8 @@ class StudyBuddyApp(Base.AbstractApplication):
                 self.hours_remaining, self.hours_needed)
             logger.debug(f'Schedule: {schedule}')
             logger.info('Reading schedule...')
-            self.say_animated(f'Here is your study schedule: {schedule}')
+            self.say_animated(
+                f"Here is your study schedule: {schedule}. I'll updated you with the rest of the schedule later.")
             self.text_lock.acquire()
             # End conversation with motivational quote
             self.tell_random_quote()
@@ -194,10 +196,10 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.say_animated('And never forget: ' + rndm_quote)
         self.text_lock.acquire()
 
-    def compute_schedule(self, timeLeft, timeNeeded):
+    def compute_schedule(self, timeLeft, timeNeeded, **kwargs):
         logger.info(
             f'Computing schedule for {timeNeeded}h work in {timeLeft}h time')
-        sched = make_schedule(timeNeeded, timeLeft)
+        sched = make_schedule(timeNeeded, timeLeft, **kwargs)
         return '. '.join(sched)
 
 
