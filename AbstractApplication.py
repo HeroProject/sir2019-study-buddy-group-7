@@ -3,6 +3,7 @@ from pathlib import Path
 from threading import Thread
 import redis
 from loguru import logger
+from emotion_wrapper import add_emotion
 
 
 class AbstractApplication(object):
@@ -175,18 +176,23 @@ class AbstractApplication(object):
         Note that a potentially recognized intent might come in a bit later than this call."""
         self.__send('action_video', 'stop watching')
 
-    def say(self, text):
+    def say(self, text, emotion=None):
         """A string that the robot should say (in the currently selected language!).
         A TextStarted event will be sent when the speaking starts and a TextDone event after it is finished."""
         logger.debug(f"Saying '{text}'")
+        if emotion is not None:
+            text = add_emotion(text, emotion=emotion)
         self.__send('action_say', text)
 
-    def say_animated(self, text):
+    def say_animated(self, text, emotion=None):
         """A string that the robot should say (in the currently selected language!) in an animated fashion.
         This means that the robot will automatically try to add (small) animations to the text.
         Moreover, in this function, special tags are supported, please see:
         http://doc.aldebaran.com/2-5/naoqi/audio/altexttospeech-tuto.html#using-tags-for-voice-tuning
         A TextStarted event will be sent when the speaking starts and a TextDone event after it is finished."""
+        logger.debug(f"Saying (anim.) '{text}'")
+        if emotion is not None:
+            text = add_emotion(text, emotion=emotion)
         self.__send('action_say_animated', text)
 
     def do_gesture(self, gesture):
