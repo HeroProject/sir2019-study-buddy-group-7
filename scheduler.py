@@ -9,9 +9,9 @@ def make_schedule(time_est: int, time_remaining: int, start_hour=None, fudge_rat
         start_hour = float(datetime.now().hour)
         start_hour += math.ceil(2*(datetime.now().minute / 60))/2
     # We compensate for planning fallacy with a fudge ratio
-    time_needed = time_est * fudge_ratio
+    # time_needed = time_est * fudge_ratio
     # Next, we use a Pomodoro scheme to create work/break bins
-    bins = max(int(2 * time_remaining), int(2*time_needed))
+    bins = int(2 * time_remaining)
     bin_assignments = []
     time_stamp = float(start_hour)
     last_activity = None

@@ -69,7 +69,7 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Robot gets activated
         logger.info('Activating Nao')
-        self.say('Beep beep.')
+        self.say('Beep.')
         self.text_lock.acquire()
         # wait for activation
         while not self.activation:
@@ -80,20 +80,17 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
-        self.ask(self.questions['students_feeling'],
-                 'students_feeling', timeout=10)
-        ## Example of add_emotion usage
-        # self.ask(add_emotion(self.questions['students_feeling']), 'students_feeling')
+        self.ask(self.questions['students_feeling'], 'students_feeling', timeout=7, emotion='empathetic')
 
         # Let's fix the students anxiouseness!
         if self.student_is_anxious():
             # robot empathises and asks for time
             logger.info(
                 'Empathising with anxious student and ask time remaining')
-            self.ask(self.questions['time_left'], 'time_left')
+            self.ask(self.questions['time_left'], 'time_left', emotion='empathetic')
             logger.info(f'Student has {self.hours_remaining} remaining')
             self.say_animated(
-                f'{self.hours_remaining}? With my help, that should be enough to get it all done!')
+                f'{self.hours_remaining}? With my help, that should be enough to get it all done!', emotion='happy')
             self.text_lock.acquire()
 
             # robot asks for the todos
@@ -106,15 +103,14 @@ class StudyBuddyApp(Base.AbstractApplication):
             logger.debug(f'Schedule: {schedule}')
             logger.info('Reading schedule...')
             self.say_animated(
-                f"Here is your study schedule: {schedule}. I'll updated you with the rest of the schedule later.")
+                f"Here is your study schedule: {schedule}. I'll update you with the rest of the schedule later.")
             self.text_lock.acquire()
             # End conversation with motivational quote
             self.tell_random_quote()
 
         # Student seems to be doing fine (not anxious). No scheduling needed
         else:
-            # TODO: Configure yes_no intent in DialogFlow
-            self.ask(self.questions['extra_motivation'], 'yes_no')
+            self.ask(self.questions['extra_motivation'], 'yes_no', emotion='happy')
             if self.yes_answer:
                 logger.info('Student requested motivation')
                 self.tell_random_quote()
@@ -139,7 +135,7 @@ class StudyBuddyApp(Base.AbstractApplication):
             elif intent_name == 'time_left':
                 self.hours_remaining = args[0]
             elif intent_name == 'time_needed':
-                self.hours_needed = list(args)
+                self.hours_needed = args[0]
             elif intent_name in ['changing_wish', 'schedule']:
                 logger.error(f'Intent: {intent_name} not implemented.')
                 raise NotImplementedError
@@ -151,9 +147,9 @@ class StudyBuddyApp(Base.AbstractApplication):
         elif event == 'LanguageChanged':
             self.language_lock.release()
 
-    def ask(self, question, audioContext, attempts=3, timeout=5):
+    def ask(self, question, audioContext, attempts=3, timeout=5, emotion=None):
         # We only want the question to be asked once, right?
-        self.say_animated(question)
+        self.say_animated(question, emotion=emotion)
         self.text_lock.acquire()
         # import ipdb; ipdb.set_trace()
         # new question, new stuff to understand
@@ -193,7 +189,7 @@ class StudyBuddyApp(Base.AbstractApplication):
     def tell_random_quote(self):
         quotes = self.config_data['motivational_quotes']
         rndm_quote = quotes[random.randint(0, len(quotes) - 1)]
-        self.say_animated('And never forget: ' + rndm_quote)
+        self.say_animated('And never forget: ' + rndm_quote, emotion='happy')
         self.text_lock.acquire()
 
     def compute_schedule(self, timeLeft, timeNeeded, **kwargs):
