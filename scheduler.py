@@ -1,13 +1,14 @@
 from datetime import datetime
-
+import math
 
 def make_schedule(time_est: int, time_remaining: int, start_hour=None, fudge_ratio=2.0):
     """Generates a pomodoro-like schedule with given parameters."""
 
     # Get the current hour if no start time is provided
     if start_hour is None:
-        start_hour = int(datetime.now().hour)
-    # TODO We compensate for planning fallacy with a fudge ratio
+        start_hour = float(datetime.now().hour)
+        start_hour += math.ceil(2*(datetime.now().minute / 60))/2
+    # We compensate for planning fallacy with a fudge ratio
     # time_needed = time_est * fudge_ratio
     # Next, we use a Pomodoro scheme to create work/break bins
     bins = int(2 * time_remaining)
@@ -15,17 +16,17 @@ def make_schedule(time_est: int, time_remaining: int, start_hour=None, fudge_rat
     time_stamp = float(start_hour)
     last_activity = None
     for i in range(bins):
-        btype = 'Revise'
+        btype = 'revise'
         if i % 3 == 0:
-            btype = 'Break'
+            btype = 'take a break'
         if i % 6 == 0 and time_stamp < 22:
-            btype = 'Food'
+            btype = 'have a snack'
         if i % 12 == 0:
-            btype = 'Exercise'
+            btype = 'get some exercise'
         if i == 0:
-            btype = 'Revise'
+            btype = 'revise'
         if time_stamp < 7.0:
-            btype = 'Sleep'
+            btype = 'get some sleep'
         if btype != last_activity:
             bin_start = stringify_time(time_stamp)
             # bin_end = stringify_time(time_stamp + 0.5)
@@ -34,6 +35,8 @@ def make_schedule(time_est: int, time_remaining: int, start_hour=None, fudge_rat
         time_stamp += 0.5
         if time_stamp > 24.0:
             time_stamp -= 24.0
+    if len(bin_assignments) > 8:
+        return bin_assignments[:8]
     return bin_assignments
 
 
