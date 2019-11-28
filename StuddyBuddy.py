@@ -82,7 +82,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         logger.info('Asking about student feelings')
         self.ask(self.questions['students_feeling'], 'students_feeling', timeout=10)
         ## Example of add_emotion usage
-        # self.ask(add_emotion(self.questions['students_feeling']), 'students_feeling')
+        # self.ask(add_emotion(self.questions['students_feeling'], 'happy'), 'students_feeling')
 
         # Let's fix the students anxiouseness!
         if self.student_is_anxious():
