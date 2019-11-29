@@ -39,6 +39,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.eye_lock = Semaphore(0)
 
         # Attributes of our application
+        self.running = False
         self.intent_understood = False
         self.activation = False
         self.student_feeling = None
@@ -63,7 +64,17 @@ class StudyBuddyApp(Base.AbstractApplication):
             logger.error(f'JSON loading failed with: {e}')
             raise e
 
+    def standby_loop(self):
+        self.activation = False
+        # wait for activation
+        while not self.activation:
+            self.set_audio_context('activation')
+            self.start_listening()
+            self.intent_lock.acquire(timeout=5)
+            self.stop_listening()
+
     def main(self):
+        self.running = True
         # Setting language
         logger.info('Setting language')
         self.set_language('en-US')
@@ -73,68 +84,68 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.set_non_idle()
         self.set_audio_hints(['study', 'buddy', 'robot', 'Nao'])
         self.say('Oh.')
-        self.do_gesture('animations/Stand/Gestures/Enthusiastic_4')
+        self.do_gesture('animations/Stand/Gestures/Yes_3')
         self.text_lock.acquire()
         self.gesture_lock.acquire()
         self.set_eye_color('white')
         self.eye_lock.acquire()
 
-        # wait for activation
-        while not self.activation:
-            self.set_audio_context('activation')
-            self.start_listening()
-            self.intent_lock.acquire(timeout=5)
-            self.stop_listening()
+        while self.running:
 
-        # Robot greets friendly and asks how student is doing
-        logger.info('Asking about student feelings')
-        self.ask(self.questions['students_feeling'],
-                 'students_feeling', timeout=7, emotion='empathetic')
+            # Standby mode until summoned
+            self.standby_loop()
 
-        # Let's fix the students anxiouseness!
-        if self.student_is_anxious():
-            # robot empathises and asks for time
-            logger.info(
-                'Empathising with anxious student and ask time remaining')
-            self.set_eye_color('blue')
-            self.eye_lock.acquire()
-            self.ask(self.questions['time_left'],
-                     'time_left', emotion='empathetic')
-            logger.info(f'Student has {self.hours_remaining} remaining')
-            self.say_animated(
-                f'{self.hours_remaining}? With my help, that should be enough to get it all done!', emotion='happy')
-            self.text_lock.acquire()
+            # Robot greets friendly and asks how student is doing
+            logger.info('Asking about student feelings')
+            self.ask(self.questions['students_feeling'],
+                    'students_feeling', timeout=7, emotion='empathetic')
 
-            # robot asks for the todos
-            logger.info('Asking student for estimated workload')
-            self.ask(self.questions['time_needed'], 'time_needed')
-
-            # calculate the schedule and read it out loud
-            schedule = self.compute_schedule(
-                self.hours_remaining, self.hours_needed)
-            logger.debug(f'Schedule: {schedule}')
-            logger.info('Reading schedule...')
-            self.say_animated(
-                f"Here is your study schedule: {schedule}. I'll update you with the rest of the schedule later.")
-            self.text_lock.acquire()
-            # End conversation with motivational quote
-            self.tell_random_quote()
-
-        # Student seems to be doing fine (not anxious). No scheduling needed
-        else:
-            self.set_eye_color('yellow')
-            self.eye_lock.acquire()
-            self.ask(self.questions['extra_motivation'],
-                     'yes_no', emotion='happy')
-            if self.yes_answer:
-                logger.info('Student requested motivation')
-                self.tell_random_quote()
-            else:
-                self.say_animated(
-                    'Okay. Good luck with your studies. You can ask me for help anytime!', emotion='happy')
-                self.do_gesture('animations/Stand/Gestures/BowShort_1')
+            # Let's fix the students anxiouseness!
+            if self.student_is_anxious():
+                # robot empathises and asks for time
+                logger.info(
+                    'Empathising with anxious student and ask time remaining')
+                self.set_eye_color('blue')
+                self.eye_lock.acquire()
+                self.say(f"I'm sorry to hear that you feel {self.student_feeling}.", emotion='empathetic')
                 self.text_lock.acquire()
-                self.gesture_lock.acquire()
+
+                self.ask(self.questions['time_left'], 'time_left')
+                logger.info(f'Student has {self.hours_remaining} remaining')
+                self.say_animated(
+                    f'{self.hours_remaining}? With my help, that should be enough to get it all done!', emotion='happy')
+                self.text_lock.acquire()
+
+                # robot asks for the todos
+                logger.info('Asking student for estimated workload')
+                self.ask(self.questions['time_needed'], 'time_needed')
+
+                # calculate the schedule and read it out loud
+                schedule = self.compute_schedule(
+                    self.hours_remaining, self.hours_needed)
+                logger.debug(f'Schedule: {schedule}')
+                logger.info('Reading schedule...')
+                self.say_animated(
+                    f"Here is your study schedule: {schedule}. I'll update you with the rest of the schedule later.")
+                self.text_lock.acquire()
+                # End conversation with motivational quote
+                self.tell_random_quote()
+
+            # Student seems to be doing fine (not anxious). No scheduling needed
+            else:
+                self.set_eye_color('yellow')
+                self.eye_lock.acquire()
+                self.ask(self.questions['extra_motivation'],
+                        'yes_no', emotion='happy')
+                if self.yes_answer:
+                    logger.info('Student requested motivation')
+                    self.tell_random_quote()
+
+            self.say_animated(
+                'Okay. Good luck with your studies. You can ask me for help anytime!', emotion='happy')
+            self.do_gesture('animations/Stand/Gestures/BowShort_1')
+            self.text_lock.acquire()
+            self.gesture_lock.acquire()
 
         logger.warning('Stopping')
         self.stop()
@@ -162,7 +173,6 @@ class StudyBuddyApp(Base.AbstractApplication):
                 raise NotImplementedError
 
     def on_robot_event(self, event):
-        #TODO make sure all our started actions are completed
         if event == 'TextDone':
             self.text_lock.release()
         elif event == 'LanguageChanged':
@@ -227,6 +237,10 @@ class StudyBuddyApp(Base.AbstractApplication):
         sched = make_schedule(timeNeeded, timeLeft, **kwargs)
         return '. '.join(sched)
 
+    def stop(self):
+        self.running = False
+        super().stop()
+
 
 class InteractionException(Exception):
     def __init__(self):
@@ -248,15 +262,15 @@ if __name__ == '__main__':
     logger.add("logs/{time}.log", level="DEBUG")
 
     # Initialise and run the application
-    sample = StudyBuddyApp()
+    app = StudyBuddyApp()
     try:
         # Run the application
         logger.warning('Running application...')
-        sample.main()
+        app.main()
     except KeyboardInterrupt:
         try:
             logger.warning('Keyboard interrupt. Stopping...')
-            sample.stop()
+            app.stop()
         except Exception as e:
             logger.error(f'The interrupt shutdown process failed with: {e}')
             raise e

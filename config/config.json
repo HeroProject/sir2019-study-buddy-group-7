@@ -10,9 +10,9 @@
     ],
 "questions": {
     "students_feeling": "Hi! How are you?",
-    "time_left": "I am sorry to hear that. How many hours do you have left before your deadline?",
+    "time_left": "Maybe you'll feel better if we get you organised for your test or exam. How many hours do you have left before your deadline?",
     "time_needed": "How many hours of studying do you think you still need to do to be prepared?",
-    "extra_motivation": "It seems like you are quite positive today. Do you still need any motivation?"
+    "extra_motivation": "I'm so happy that you're feeling positive today! Would you like some extra motivation?"
 },
 "responses": {
     "please_repeat": "Sorry, I didn't hear you. Can you please repeat that?",
