@@ -73,7 +73,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.set_non_idle()
         self.set_audio_hints(['study', 'buddy', 'robot', 'Nao'])
         self.say('Oh.')
-        self.do_gesture('animations/Stand/Gestures/Hey_1')
+        self.do_gesture('animations/Stand/Gestures/Enthusiastic_4')
         self.text_lock.acquire()
         self.gesture_lock.acquire()
         self.set_eye_color('white')
@@ -81,7 +81,6 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # wait for activation
         while not self.activation:
-            logger.info(f'activation: {self.activation}')
             self.set_audio_context('activation')
             self.start_listening()
             self.intent_lock.acquire(timeout=5)
@@ -89,7 +88,8 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
-        self.ask(self.questions['students_feeling'], 'students_feeling', timeout=7, emotion='empathetic')
+        self.ask(self.questions['students_feeling'],
+                 'students_feeling', timeout=7, emotion='empathetic')
 
         # Let's fix the students anxiouseness!
         if self.student_is_anxious():
@@ -98,7 +98,8 @@ class StudyBuddyApp(Base.AbstractApplication):
                 'Empathising with anxious student and ask time remaining')
             self.set_eye_color('blue')
             self.eye_lock.acquire()
-            self.ask(self.questions['time_left'], 'time_left', emotion='empathetic')
+            self.ask(self.questions['time_left'],
+                     'time_left', emotion='empathetic')
             logger.info(f'Student has {self.hours_remaining} remaining')
             self.say_animated(
                 f'{self.hours_remaining}? With my help, that should be enough to get it all done!', emotion='happy')
@@ -123,22 +124,24 @@ class StudyBuddyApp(Base.AbstractApplication):
         else:
             self.set_eye_color('yellow')
             self.eye_lock.acquire()
-            self.ask(self.questions['extra_motivation'], 'yes_no', emotion='happy')
+            self.ask(self.questions['extra_motivation'],
+                     'yes_no', emotion='happy')
             if self.yes_answer:
                 logger.info('Student requested motivation')
                 self.tell_random_quote()
             else:
-                self.say_animated('Okay. Good luck with your studies. You can ask me for help anytime!', emotion='happy')
+                self.say_animated(
+                    'Okay. Good luck with your studies. You can ask me for help anytime!', emotion='happy')
                 self.do_gesture('animations/Stand/Gestures/BowShort_1')
                 self.text_lock.acquire()
                 self.gesture_lock.acquire()
 
-        logger.debug('Stopping')
+        logger.warning('Stopping')
         self.stop()
 
     def on_audio_intent(self, intent_name, *args):
-        logger.debug(f'Audio intent: {intent_name}')
-        logger.debug(f'Audio intent args: {args}')
+        logger.info(f'Audio intent: {intent_name}')
+        logger.info(f'Audio intent args: {args}')
         if intent_name is not None:
             self.intent_understood = True
             if intent_name == 'activation':
@@ -158,7 +161,6 @@ class StudyBuddyApp(Base.AbstractApplication):
                 logger.error(f'Intent: {intent_name} not implemented.')
                 raise NotImplementedError
 
-
     def on_robot_event(self, event):
         #TODO make sure all our started actions are completed
         if event == 'TextDone':
@@ -177,7 +179,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         # new question, new stuff to understand
         self.intent_understood = False
         while attempts > 0 and not self.intent_understood:
-            logger.debug(f'Attempts {attempts}| audioContext {audioContext}')
+            logger.info(f'Attempts {attempts}| audioContext {audioContext}')
             self.set_eye_color('white')
             self.eye_lock.acquire()
             attempts -= 1
@@ -205,10 +207,10 @@ class StudyBuddyApp(Base.AbstractApplication):
         sent = TextBlob(resp).sentiment
         polarity = sent.polarity
         subjectivity = sent.subjectivity
-        logger.debug(f'Student polarity: {polarity}')
-        logger.debug(f'Student subjectivity: {subjectivity}')
+        logger.info(f'Student polarity: {polarity}')
+        logger.info(f'Student subjectivity: {subjectivity}')
         if polarity < -0.0:
-            logger.debug(f'Student classified as anxious')
+            logger.info(f'Student classified as anxious')
             return True
         logger.info('Student NOT classified as anxious.')
         return False
