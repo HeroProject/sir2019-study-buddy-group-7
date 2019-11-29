@@ -98,7 +98,7 @@ class StudyBuddyApp(Base.AbstractApplication):
             # Robot greets friendly and asks how student is doing
             logger.info('Asking about student feelings')
             self.ask(self.questions['students_feeling'],
-                    'students_feeling', timeout=7, emotion='empathetic')
+                     'students_feeling', timeout=7, emotion='empathetic')
 
             # Let's fix the students anxiouseness!
             if self.student_is_anxious():
@@ -107,10 +107,12 @@ class StudyBuddyApp(Base.AbstractApplication):
                     'Empathising with anxious student and ask time remaining')
                 self.set_eye_color('blue')
                 self.eye_lock.acquire()
-                self.say(f"I'm sorry to hear that you feel {self.student_feeling}.", emotion='empathetic')
+                self.say(
+                    f"I'm sorry to hear that you feel {self.student_feeling}.", emotion='empathetic')
                 self.text_lock.acquire()
 
-                self.ask(self.questions['time_left'], 'time_left')
+                self.ask(self.questions['time_left'],
+                         'time_left', emotion='empathetic')
                 logger.info(f'Student has {self.hours_remaining} remaining')
                 self.say_animated(
                     f'{self.hours_remaining}? With my help, that should be enough to get it all done!', emotion='happy')
@@ -136,7 +138,7 @@ class StudyBuddyApp(Base.AbstractApplication):
                 self.set_eye_color('yellow')
                 self.eye_lock.acquire()
                 self.ask(self.questions['extra_motivation'],
-                        'yes_no', emotion='happy')
+                         'yes_no', emotion='happy')
                 if self.yes_answer:
                     logger.info('Student requested motivation')
                     self.tell_random_quote()
@@ -153,6 +155,8 @@ class StudyBuddyApp(Base.AbstractApplication):
     def on_audio_intent(self, intent_name, *args):
         logger.info(f'Audio intent: {intent_name}')
         logger.info(f'Audio intent args: {args}')
+        if intent_name == 'input.unkown':
+            intent_name = None
         if intent_name is not None:
             self.intent_understood = True
             if intent_name == 'activation':
