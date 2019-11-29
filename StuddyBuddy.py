@@ -9,6 +9,7 @@ import sys
 import os
 import json
 from scheduler import make_schedule
+from time import sleep
 
 from emotion_wrapper import add_emotion
 
@@ -35,6 +36,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.text_lock = Semaphore(0)
         self.intent_lock = Semaphore(0)
         self.gesture_lock = Semaphore(0)
+        self.eye_lock = Semaphore(0)
 
         # Attributes of our application
         self.intent_understood = False
@@ -66,11 +68,17 @@ class StudyBuddyApp(Base.AbstractApplication):
         logger.info('Setting language')
         self.set_language('en-US')
         self.language_lock.acquire()
-
         # Robot gets activated
         logger.info('Activating Nao')
-        self.say('Beep.')
+        self.set_non_idle()
+        self.set_audio_hints(['study', 'buddy', 'robot', 'Nao'])
+        self.say('Oh.')
+        self.do_gesture('animations/Stand/Gestures/Hey_1')
         self.text_lock.acquire()
+        self.gesture_lock.acquire()
+        self.set_eye_color('white')
+        self.eye_lock.acquire()
+
         # wait for activation
         while not self.activation:
             self.set_audio_context('activation')
@@ -81,14 +89,14 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Robot greets friendly and asks how student is doing
         logger.info('Asking about student feelings')
         self.ask(self.questions['students_feeling'], 'students_feeling', timeout=7, emotion='empathetic')
-        ## Example of add_emotion usage
-        # self.ask(add_emotion(self.questions['students_feeling'], 'happy'), 'students_feeling')
 
         # Let's fix the students anxiouseness!
         if self.student_is_anxious():
             # robot empathises and asks for time
             logger.info(
                 'Empathising with anxious student and ask time remaining')
+            self.set_eye_color('blue')
+            self.eye_lock.acquire()
             self.ask(self.questions['time_left'], 'time_left', emotion='empathetic')
             logger.info(f'Student has {self.hours_remaining} remaining')
             self.say_animated(
@@ -112,13 +120,17 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # Student seems to be doing fine (not anxious). No scheduling needed
         else:
+            self.set_eye_color('yellow')
+            self.eye_lock.acquire()
             self.ask(self.questions['extra_motivation'], 'yes_no', emotion='happy')
             if self.yes_answer:
                 logger.info('Student requested motivation')
                 self.tell_random_quote()
             else:
                 self.say_animated('Okay. Good luck with your studies. You can ask me for help anytime!', emotion='happy')
+                self.do_gesture('animations/Stand/Gestures/BowShort_1')
                 self.text_lock.acquire()
+                self.gesture_lock.acquire()
 
         logger.debug('Stopping')
         self.stop()
@@ -145,30 +157,39 @@ class StudyBuddyApp(Base.AbstractApplication):
                 logger.error(f'Intent: {intent_name} not implemented.')
                 raise NotImplementedError
 
+
     def on_robot_event(self, event):
         #TODO make sure all our started actions are completed
         if event == 'TextDone':
             self.text_lock.release()
         elif event == 'LanguageChanged':
             self.language_lock.release()
+        elif event == 'GestureDone':
+            self.gesture_lock.release()
+        elif event == 'EyeColourDone':
+            self.eye_lock.release()
 
     def ask(self, question, audioContext, attempts=3, timeout=5, emotion=None):
         # We only want the question to be asked once, right?
         self.say_animated(question, emotion=emotion)
         self.text_lock.acquire()
-        # import ipdb; ipdb.set_trace()
         # new question, new stuff to understand
         self.intent_understood = False
         while attempts > 0 and not self.intent_understood:
             logger.debug(f'Attempts {attempts}| audioContext {audioContext}')
+            self.set_eye_color('white')
+            self.eye_lock.acquire()
             attempts -= 1
             self.set_audio_context(audioContext)
             self.start_listening()
             self.intent_lock.acquire(timeout=timeout)
             self.stop_listening()
             if not self.intent_understood and attempts > 0:
+                self.set_eye_color('red')
                 self.say_animated(self.responses['please_repeat'])
+                self.eye_lock.acquire()
                 self.text_lock.acquire()
+
         if attempts == 0:
             self.say_animated(self.responses['repeat_timeout'])
             raise InteractionException

@@ -140,7 +140,7 @@ class AbstractApplication(object):
         """Indicate the Dialogflow context to use for the next speech-to-text (or to intent)."""
         self.__send('audio_context', context)
 
-    def set_audio_hints(self, *args):
+    def set_audio_hints(self, args):
         """Pass hints to Dialogflow about the words that it should recognize especially."""
         self.__send('audio_hints', '|'.join(args))
 
