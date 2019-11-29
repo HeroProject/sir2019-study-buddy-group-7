@@ -81,6 +81,7 @@ class StudyBuddyApp(Base.AbstractApplication):
 
         # wait for activation
         while not self.activation:
+            logger.info(f'activation: {self.activation}')
             self.set_audio_context('activation')
             self.start_listening()
             self.intent_lock.acquire(timeout=5)
@@ -138,20 +139,20 @@ class StudyBuddyApp(Base.AbstractApplication):
     def on_audio_intent(self, intent_name, *args):
         logger.debug(f'Audio intent: {intent_name}')
         logger.debug(f'Audio intent args: {args}')
-        if len(args) > 0:
+        if intent_name is not None:
             self.intent_understood = True
             if intent_name == 'activation':
                 self.activation = True
-            elif intent_name == 'students_feeling':
+            elif intent_name == 'students_feeling' and len(args) > 0:
                 self.student_feeling = list(args)
             elif intent_name == 'yes_no':
                 if args[0] == 'yes':
                     self.yes_answer = True
                 else:
                     self.yes_answer = False
-            elif intent_name == 'time_left':
+            elif intent_name == 'time_left' and len(args) > 0:
                 self.hours_remaining = args[0]
-            elif intent_name == 'time_needed':
+            elif intent_name == 'time_needed' and len(args) > 0:
                 self.hours_needed = args[0]
             elif intent_name in ['changing_wish', 'schedule']:
                 logger.error(f'Intent: {intent_name} not implemented.')
