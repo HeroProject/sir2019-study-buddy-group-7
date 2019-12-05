@@ -42,7 +42,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.running = False
         self.intent_understood = False
         self.activation = False
-        self.student_feeling = None
+        self.student_feeling = []
         self.yes_answer = True
         # self.changing_wish = None
         # self.schedule = None
@@ -70,7 +70,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         while not self.activation:
             self.set_audio_context('activation')
             self.start_listening()
-            self.intent_lock.acquire(timeout=2)
+            self.intent_lock.acquire(timeout=3)
             self.stop_listening()
 
     def main(self):
@@ -94,8 +94,9 @@ class StudyBuddyApp(Base.AbstractApplication):
 
             # Standby mode until summoned
             self.standby_loop()
-            self.set_eye_color('white')
-            self.eye_lock.acquire()
+            if self.activation:
+                self.set_eye_color('white')
+                self.eye_lock.acquire()
 
             # Robot greets friendly and asks how student is doing
             logger.info('Asking about student feelings')
