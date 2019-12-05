@@ -1,8 +1,14 @@
 from datetime import datetime
 import math
+from loguru import logger
 
 def make_schedule(time_est: int, time_remaining: int, start_hour=None, fudge_ratio=2.0):
     """Generates a pomodoro-like schedule with given parameters."""
+
+    if time_est is None or time_remaining is None:
+        logger.warning(f'Invalid times: time_est: {time_est}\ttime_remaining: {time_remaining}')
+        time_est = 2
+        time_remaining = 3
 
     # Get the current hour if no start time is provided
     if start_hour is None:

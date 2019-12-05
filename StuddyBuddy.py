@@ -42,7 +42,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         self.running = False
         self.intent_understood = False
         self.activation = False
-        self.student_feeling = None
+        self.student_feeling = []
         self.yes_answer = True
         # self.changing_wish = None
         # self.schedule = None
@@ -70,7 +70,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         while not self.activation:
             self.set_audio_context('activation')
             self.start_listening()
-            self.intent_lock.acquire(timeout=5)
+            self.intent_lock.acquire(timeout=3)
             self.stop_listening()
 
     def main(self):
@@ -82,23 +82,26 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Robot gets activated
         logger.info('Activating Nao')
         self.set_non_idle()
-        self.set_audio_hints(['study', 'buddy', 'robot', 'Nao'])
+        self.set_audio_hints(['study', 'buddy', 'robot', 'Nao', 'hello', 'hi'])
         self.say('Oh.')
         self.do_gesture('animations/Stand/Gestures/Yes_3')
         self.text_lock.acquire()
         self.gesture_lock.acquire()
-        self.set_eye_color('white')
+        self.set_eye_color('yellow')
         self.eye_lock.acquire()
 
         while self.running:
 
             # Standby mode until summoned
             self.standby_loop()
+            if self.activation:
+                self.set_eye_color('white')
+                self.eye_lock.acquire()
 
             # Robot greets friendly and asks how student is doing
             logger.info('Asking about student feelings')
             self.ask(self.questions['students_feeling'],
-                     'students_feeling', timeout=7, emotion='empathetic')
+                     'students_feeling', timeout=8, emotion='empathetic')
 
             # Let's fix the students anxiouseness!
             if self.student_is_anxious():
@@ -223,7 +226,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         subjectivity = sent.subjectivity
         logger.info(f'Student polarity: {polarity}')
         logger.info(f'Student subjectivity: {subjectivity}')
-        if polarity < -0.0:
+        if polarity < 0.4:
             logger.info(f'Student classified as anxious')
             return True
         logger.info('Student NOT classified as anxious.')
