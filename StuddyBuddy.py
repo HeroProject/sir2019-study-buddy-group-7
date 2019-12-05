@@ -70,7 +70,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         while not self.activation:
             self.set_audio_context('activation')
             self.start_listening()
-            self.intent_lock.acquire(timeout=5)
+            self.intent_lock.acquire(timeout=2)
             self.stop_listening()
 
     def main(self):
@@ -98,7 +98,7 @@ class StudyBuddyApp(Base.AbstractApplication):
             # Robot greets friendly and asks how student is doing
             logger.info('Asking about student feelings')
             self.ask(self.questions['students_feeling'],
-                     'students_feeling', timeout=7, emotion='empathetic')
+                     'students_feeling', timeout=8, emotion='empathetic')
 
             # Let's fix the students anxiouseness!
             if self.student_is_anxious():
@@ -223,7 +223,7 @@ class StudyBuddyApp(Base.AbstractApplication):
         subjectivity = sent.subjectivity
         logger.info(f'Student polarity: {polarity}')
         logger.info(f'Student subjectivity: {subjectivity}')
-        if polarity < -0.0:
+        if polarity < 0.4:
             logger.info(f'Student classified as anxious')
             return True
         logger.info('Student NOT classified as anxious.')
