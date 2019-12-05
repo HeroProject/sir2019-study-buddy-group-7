@@ -82,18 +82,20 @@ class StudyBuddyApp(Base.AbstractApplication):
         # Robot gets activated
         logger.info('Activating Nao')
         self.set_non_idle()
-        self.set_audio_hints(['study', 'buddy', 'robot', 'Nao'])
+        self.set_audio_hints(['study', 'buddy', 'robot', 'Nao', 'hello', 'hi'])
         self.say('Oh.')
         self.do_gesture('animations/Stand/Gestures/Yes_3')
         self.text_lock.acquire()
         self.gesture_lock.acquire()
-        self.set_eye_color('white')
+        self.set_eye_color('yellow')
         self.eye_lock.acquire()
 
         while self.running:
 
             # Standby mode until summoned
             self.standby_loop()
+            self.set_eye_color('white')
+            self.eye_lock.acquire()
 
             # Robot greets friendly and asks how student is doing
             logger.info('Asking about student feelings')
