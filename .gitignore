@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore log files
+*.log
+logs/
+# Pycharm
+.idea/*
+# Don't commit the secrets for DialogFLow
+*key.json
