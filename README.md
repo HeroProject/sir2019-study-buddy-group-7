@@ -1,5 +1,13 @@
 # Study Buddy
 
+![](figs/studybuddy.png)
+
+## Abstract
+Test anxiety affects many students and prevents them from achieving results fitting of their abilities. This project addressed the problem of student test anxiety by providing a robot study companion. The StudyBuddy supports students by providing empathy and by assisting them in scheduling their revision time. 
+The *StudyBuddy* utilises sentiment analysis to assess the student’s anxiety levels and respond accordingly. This is combined with extensive DialogFlow infrastructure to enhance conversational ability. A major strength of the design is the dynamic scheduling module that generates a full study timetable based on the student’s time constraints. “Active standby” along with responsive gestures, eye colour, and vocal tone help enhance the usability of StudyBuddy, whilst affording hints of a personality. 
+Through the user-centred design process, *StudyBuddy* was refined into a working prototype that was evaluated in a pilot study (7 participants, 17 tests). Both qualitative and quantitative methods were used to evaluate the prototype for robustness and its effect on the emotional state of the study participants. The robot was found to accurately evaluate participants’ anxiety levels and had a net positive impact on their emotional states. The study highlighted how the design could be improved through expanded DialogFlow datasets and more-nuanced sentiment analysis. These preliminary findings suggest that with further development *StudyBuddy* could be a useful tool to help anxious students. 
+
+
 ## The Team
 - [gianlucatruda](http://github.com/gianlucatruda)
 - [britt0508](http://github.com/britt0508)
@@ -26,19 +34,3 @@ We only have limited access to the Nao hardware. We will develop as follows:
 
 ---
 
-## Semaphores
-
-Quite good, short explanation:
-A semaphore manages an internal counter which is decremented by each acquire() call and incremented by each release() call. The counter can never go below zero; when acquire() finds that it is zero, it blocks, waiting until some other thread calls release().
-https://www.bogotobogo.com/python/Multithread/python_multithreading_Synchronization_Semaphore_Objects_Thread_Pool.php
-
-This means that the whole programm is blocked, until the release() method is called. In our case we want that to happen when a corresponding "done" event is sent.
-
----
-
-## Development Tasks
-
-- [x] Configure everyon's development environments
-- [x] Divide up the workload and define tasks
-- [x] Connect to Nao
-- [x] Give everyone access to the repo
