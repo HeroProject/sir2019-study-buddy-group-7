@@ -1,4 +1,4 @@
-redis==3.3.11
+redis==4.4.4
 loguru==0.3.2
 nltk==3.4.5
 textblob==0.15.3
